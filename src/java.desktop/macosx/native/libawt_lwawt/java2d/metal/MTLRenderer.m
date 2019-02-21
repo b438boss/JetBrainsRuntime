@@ -28,7 +28,7 @@
 #include <math.h>
 
 
-#define DEBUG 1
+#define DEBUG 0
 
 #include "sun_java2d_metal_MTLRenderer.h"
 
@@ -47,16 +47,6 @@ void MTLRenderer_BeginFrame(MTLCtxInfo* ctx, MTLLayer* layer) {
         return;
     }
 
-    vector_float4 X = {1, 0, 0, 0};
-    vector_float4 Y = {0, 1, 0, 0};
-    vector_float4 Z = {0, 0, 1, 0};
-    vector_float4 W = {0, 0, 0, 1};
-
-    matrix_float4x4 rot = {{X, Y, Z, W}};
-
-    ctx->mtlUniforms = (struct FrameUniforms *) [ctx->mtlUniformBuffer contents];
-    ctx->mtlUniforms->projectionViewModel = rot;
-
     // Create a command buffer.
     ctx->mtlCommandBuffer = [[ctx->mtlCommandQueue commandBuffer] retain];
 }
@@ -64,45 +54,31 @@ void MTLRenderer_BeginFrame(MTLCtxInfo* ctx, MTLLayer* layer) {
 void MTLRenderer_FillParallelogramMetal(
     MTLCtxInfo* ctx, jfloat x, jfloat y, jfloat dx1, jfloat dy1, jfloat dx2, jfloat dy2)
 {
-
     if (ctx == NULL) {
         return;
     }
 
     ctx->mtlEmptyCommandBuffer = NO;
 
-    char r = (ctx->mtlColor >> 16)&(0xFF);
-    char g = (ctx->mtlColor >> 8)&0xFF;
-    char b = (ctx->mtlColor)&0xFF;
-    char a = (ctx->mtlColor >> 24)&0xFF;
-
     struct Vertex verts[PGRAM_VERTEX_COUNT] = {
     { {(2.0*x/ctx->mtlFrameBuffer.width) - 1.0,
-       2.0*(1.0 - y/ctx->mtlFrameBuffer.height) - 1.0, 0.0},
-       {r, g, b, a},
-       {0.0, 0.0}},
+       2.0*(1.0 - y/ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
 
     { {2.0*(x+dx1)/ctx->mtlFrameBuffer.width - 1.0,
-      2.0*(1.0 - (y+dy1)/ctx->mtlFrameBuffer.height) - 1.0, 0.0},
-      {r, g, b, a}, {0.0, 0.0}},
+      2.0*(1.0 - (y+dy1)/ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
 
     { {2.0*(x+dx2)/ctx->mtlFrameBuffer.width - 1.0,
-      2.0*(1.0 - (y+dy2)/ctx->mtlFrameBuffer.height) - 1.0, 0.0},
-      {r, g, b, a}, {0.0, 0.0}},
+      2.0*(1.0 - (y+dy2)/ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
 
     { {2.0*(x+dx1)/ctx->mtlFrameBuffer.width - 1.0,
-      2.0*(1.0 - (y+dy1)/ctx->mtlFrameBuffer.height) - 1.0, 0.0},
-      {r, g, b, a}, {0.0, 0.0}},
+      2.0*(1.0 - (y+dy1)/ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
 
     { {2.0*(x + dx1 + dx2)/ctx->mtlFrameBuffer.width - 1.0,
-      2.0*(1.0 - (y+ dy1 + dy2)/ctx->mtlFrameBuffer.height) - 1.0, 0.0},
-      {r, g, b, a}, {0.0, 0.0}},
+      2.0*(1.0 - (y+ dy1 + dy2)/ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
 
     { {2.0*(x+dx2)/ctx->mtlFrameBuffer.width - 1.0,
       2.0*(1.0 - (y+dy2)/ctx->mtlFrameBuffer.height) - 1.0, 0.0},
-      {r, g, b, a}, {0.0, 0.0}
     }};
-
 
     // Encode render command.
     if (!ctx->mtlRenderPassDesc) {
@@ -124,8 +100,17 @@ void MTLRenderer_FillParallelogramMetal(
         MTLViewport vp = {0, 0, ctx->mtlFrameBuffer.width, ctx->mtlFrameBuffer.height, 0, 1};
         [mtlEncoder setViewport:vp];
         [mtlEncoder setRenderPipelineState:ctx->mtlPipelineState];
-        [mtlEncoder setVertexBuffer:ctx->mtlUniformBuffer
-                          offset:0 atIndex:FrameUniformBuffer];
+
+        int r = (ctx->mtlColor >> 16)&(0xFF);
+        int g = (ctx->mtlColor >> 8)&0xFF;
+        int b = (ctx->mtlColor)&0xFF;
+        int a = (ctx->mtlColor >> 24)&0xFF;
+
+        vector_float4 color =
+            {r/255.0f, g/255.0f, b/255.0f, a/255.0f};
+        struct FrameUniforms uf = {color};
+
+        [mtlEncoder setVertexBytes:&uf length:sizeof(uf) atIndex:FrameUniformBuffer];
 
         [mtlEncoder setVertexBytes:verts length:sizeof(verts) atIndex:MeshVertexBuffer];
         [mtlEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount: PGRAM_VERTEX_COUNT];
