@@ -399,39 +399,103 @@ MTLRenderer_FillRect(MTLContext *mtlc, jint x, jint y, jint w, jint h)
     */
 }
 
+const int SPAN_BUF_SIZE=64;
+
 void
 MTLRenderer_FillSpans(MTLContext *mtlc, jint spanCount, jint *spans)
 {
     J2dTraceLn(J2D_TRACE_INFO, "MTLRenderer_FillSpans");
-
-//    RETURN_IF_NULL(mtlc);
-//    RETURN_IF_NULL(spans);
-
-//    CHECK_PREVIOUS_OP(GL_QUADS);
     while (spanCount > 0) {
-        jint x1 = *(spans++);
-        jint y1 = *(spans++);
-        jint x2 = *(spans++);
-        jint y2 = *(spans++);
-        BMTLSDOps *dstOps = MTLRenderQueue_GetCurrentDestination();
+        __block struct {
+            jfloat spns[SPAN_BUF_SIZE*4];
+        } spanStruct;
 
-//        fprintf(stderr, "MTLRenderer_FillParallelogram "
-//                        "(%p x=%6.2f y=%6.2f "
-//                        "dx1=%6.2f dy1=%6.2f "
-//                        "dx2=%6.2f dy2=%6.2f)\n",
-//                dstOps, x1, y1,
-//                x2 - x1, 0,
-//                0, y2 - y1);
+        __block jfloat sc = spanCount > SPAN_BUF_SIZE ? SPAN_BUF_SIZE : spanCount;
+
+        for (int i = 0; i < sc; i++) {
+            spanStruct.spns[i * 4] = *(spans++);
+            spanStruct.spns[i * 4 + 1] = *(spans++);
+            spanStruct.spns[i * 4 + 2] = *(spans++);
+            spanStruct.spns[i * 4 + 3] = *(spans++);
+        }
+
+        BMTLSDOps *dstOps = MTLRenderQueue_GetCurrentDestination();
 
         if (dstOps != NULL) {
             MTLSDOps *dstCGLOps = (MTLSDOps *) dstOps->privOps;
             [JNFRunLoop performOnMainThreadWaiting:NO withBlock:^(){
-                MTLRenderer_FillParallelogramMetal(
-                    dstCGLOps->configInfo->context->ctxInfo,
-                    x1, y1, x2-x1, 0, 0, y2 - y1);
+                MTLCtxInfo* ctx = dstCGLOps->configInfo->context->ctxInfo;
+                    if (ctx == NULL) {
+                        return;
+                    }
+
+                    ctx->mtlEmptyCommandBuffer = NO;
+
+                    // Encode render command.
+                    if (!ctx->mtlRenderPassDesc) {
+                        ctx->mtlRenderPassDesc = [[MTLRenderPassDescriptor renderPassDescriptor] retain];
+                        if (ctx->mtlRenderPassDesc) {
+                          MTLRenderPassColorAttachmentDescriptor *colorAttachment = ctx->mtlRenderPassDesc.colorAttachments[0];
+                          colorAttachment.texture = ctx->mtlFrameBuffer;
+
+                          colorAttachment.loadAction = MTLLoadActionLoad;
+                          colorAttachment.clearColor = MTLClearColorMake(0.0f, 0.0f, 0.0f, 1.0f);
+
+                          colorAttachment.storeAction = MTLStoreActionStore;
+                        }
+                    }
+
+                    if (ctx->mtlRenderPassDesc) {
+                        id<MTLRenderCommandEncoder>  mtlEncoder =
+                            [ctx->mtlCommandBuffer renderCommandEncoderWithDescriptor:ctx->mtlRenderPassDesc];
+                        MTLViewport vp = {0, 0, ctx->mtlFrameBuffer.width, ctx->mtlFrameBuffer.height, 0, 1};
+                        [mtlEncoder setViewport:vp];
+                        [mtlEncoder setRenderPipelineState:ctx->mtlPipelineState];
+
+                        int r = (ctx->mtlColor >> 16)&(0xFF);
+                        int g = (ctx->mtlColor >> 8)&0xFF;
+                        int b = (ctx->mtlColor)&0xFF;
+                        int a = (ctx->mtlColor >> 24)&0xFF;
+
+                        vector_float4 color =
+                            {r/255.0f, g/255.0f, b/255.0f, a/255.0f};
+                        struct FrameUniforms uf = {color};
+
+                        [mtlEncoder setVertexBytes:&uf length:sizeof(uf) atIndex:FrameUniformBuffer];
+                        for (int i = 0; i < sc; i++) {
+                            jfloat x1 = spanStruct.spns[i * 4];
+                            jfloat y1 = spanStruct.spns[i * 4 + 1];
+                            jfloat x2 = spanStruct.spns[i * 4 + 2];
+                            jfloat y2 = spanStruct.spns[i * 4 + 3];
+
+                            struct Vertex verts[PGRAM_VERTEX_COUNT] = {
+                                {{(2.0 * x1 / ctx->mtlFrameBuffer.width) - 1.0,
+                                2.0 * (1.0 - y1 / ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
+
+                                {{2.0 * (x2) / ctx->mtlFrameBuffer.width - 1.0,
+                                2.0 * (1.0 - y1 / ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
+
+                                {{2.0 * x1 / ctx->mtlFrameBuffer.width - 1.0,
+                                2.0 * (1.0 - y2 / ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
+
+                                {{2.0 * x2 / ctx->mtlFrameBuffer.width - 1.0,
+                                2.0 * (1.0 - y1 / ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
+
+                                {{2.0 * (x2) / ctx->mtlFrameBuffer.width - 1.0,
+                                2.0 * (1.0 - y2 / ctx->mtlFrameBuffer.height) - 1.0, 0.0}},
+
+                                {{2.0 * (x1) / ctx->mtlFrameBuffer.width - 1.0,
+                                2.0 * (1.0 - y2 / ctx->mtlFrameBuffer.height) - 1.0, 0.0},
+                            }};
+
+                            [mtlEncoder setVertexBytes:verts length:sizeof(verts) atIndex:MeshVertexBuffer];
+                            [mtlEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:PGRAM_VERTEX_COUNT];
+                        }
+                        [mtlEncoder endEncoding];
+                    }
                 }];
         }
-        spanCount--;
+        spanCount -= sc;
     }
 }
 
