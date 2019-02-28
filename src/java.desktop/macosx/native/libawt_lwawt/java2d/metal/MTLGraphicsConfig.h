@@ -89,7 +89,6 @@ typedef struct _MTLCtxInfo {
     BOOL                        mtlEmptyCommandBuffer;
     id<MTLBuffer>               mtlVertexBuffer;
     NSView*                     scratchSurface;
-    NSString*                   mtlShadersLib;
     jint                        mtlColor;
     MTLRenderPassDescriptor*    mtlRenderPassDesc;
 } MTLCtxInfo;

@@ -200,7 +200,6 @@ static struct TxtVertex verts[PGRAM_VERTEX_COUNT] = {
     memset(ctxinfo, 0, sizeof(MTLCtxInfo));
     ctxinfo->scratchSurface = scratchSurface;
     ctxinfo->mtlDevice = [CGDirectDisplayCopyCurrentMetalDevice(displayID) retain];
-    ctxinfo->mtlShadersLib = [mtlShadersLib retain];
 
     ctxinfo->mtlVertexBuffer = [[ctxinfo->mtlDevice  newBufferWithBytes:verts
                                                            length:sizeof(verts)
