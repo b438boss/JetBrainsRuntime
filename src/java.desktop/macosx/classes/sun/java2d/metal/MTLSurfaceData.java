@@ -344,7 +344,6 @@ public abstract class MTLSurfaceData extends MTLSurfaceDataBase {
     }
 
     public static void dispose(long pData, long pConfigInfo) {
-        MTLSurfaceData.dispose(pData, pConfigInfo);
         MTLGraphicsConfig.deRefPConfigInfo(pConfigInfo);
     }
 }
