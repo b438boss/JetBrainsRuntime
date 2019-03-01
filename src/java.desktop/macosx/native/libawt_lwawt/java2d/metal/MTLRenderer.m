@@ -135,8 +135,6 @@ void MTLRenderer_FillParallelogramMetal(
     [mtlEncoder endEncoding];
 }
 
-}
-
 /**
  * Note: Some of the methods in this file apply a "magic number"
  * translation to line segments.  The OpenGL specification lays out the
