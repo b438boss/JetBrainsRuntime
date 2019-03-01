@@ -51,7 +51,7 @@ void MTLRenderer_BeginFrame(MTLContext* ctx, MTLLayer* layer) {
     ctx->mtlCommandBuffer = [[ctx->mtlCommandQueue commandBuffer] retain];
 }
 
-void _prepareRenderPassDescriptor(MTLCtxInfo* ctx) {
+void _prepareRenderPassDescriptor(MTLContext* ctx) {
     if (ctx == NULL || ctx->mtlRenderPassDesc != NULL)
         return;
 
@@ -67,7 +67,7 @@ void _prepareRenderPassDescriptor(MTLCtxInfo* ctx) {
     }
 }
 
-id<MTLRenderCommandEncoder> _prepareEncoder(MTLCtxInfo* ctx) {
+id<MTLRenderCommandEncoder> _prepareEncoder(MTLContext* ctx) {
     _prepareRenderPassDescriptor(ctx);
     if (ctx == NULL || ctx->mtlRenderPassDesc == NULL)
         return nil;
@@ -92,9 +92,9 @@ id<MTLRenderCommandEncoder> _prepareEncoder(MTLCtxInfo* ctx) {
     return mtlEncoder;
 }
 
-jfloat _screen2mtlX(MTLCtxInfo* ctx, jfloat x) { return (2.0*x/ctx->mtlFrameBuffer.width) - 1.0; }
+jfloat _screen2mtlX(MTLContext* ctx, jfloat x) { return (2.0*x/ctx->mtlFrameBuffer.width) - 1.0; }
 
-jfloat _screen2mtlY(MTLCtxInfo* ctx, jfloat y) { return 2.0*(1.0 - y/ctx->mtlFrameBuffer.height) - 1.0; }
+jfloat _screen2mtlY(MTLContext* ctx, jfloat y) { return 2.0*(1.0 - y/ctx->mtlFrameBuffer.height) - 1.0; }
 
 void MTLRenderer_FillParallelogramMetal(
     MTLContext* ctx, jfloat x, jfloat y, jfloat dx1, jfloat dy1, jfloat dx2, jfloat dy2)
@@ -164,7 +164,7 @@ void MTLRenderer_FillParallelogramMetal(
  * hardware to ensure consistent rendering everywhere.
  */
 
-void MTLRenderer_DrawLineMetal(MTLCtxInfo *ctx, jfloat x1, jfloat y1, jfloat x2, jfloat y2) {
+void MTLRenderer_DrawLineMetal(MTLContext *ctx, jfloat x1, jfloat y1, jfloat x2, jfloat y2) {
     id<MTLRenderCommandEncoder> mtlEncoder = _prepareEncoder(ctx);
     if (mtlEncoder == nil)
         return;
@@ -189,12 +189,12 @@ void MTLRenderer_DrawLine(MTLContext *mtlc, jint x1, jint y1, jint x2, jint y2) 
     if (dstOps != NULL) {
         MTLSDOps *dstCGLOps = (MTLSDOps *)dstOps->privOps;
         [JNFRunLoop performOnMainThreadWaiting:NO withBlock:^(){
-            MTLRenderer_DrawLineMetal(dstCGLOps->configInfo->context->ctxInfo, x1, y1, x2, y2);
+            MTLRenderer_DrawLineMetal(dstCGLOps->configInfo->context, x1, y1, x2, y2);
         }];
     }
 }
 
-void MTLRenderer_DrawRectMetal(MTLCtxInfo *ctx, jint x, jint y, jint w, jint h) {
+void MTLRenderer_DrawRectMetal(MTLContext *ctx, jint x, jint y, jint w, jint h) {
     // TODO: use DrawParallelogram(x, y, w, h, lw=1, lh=1)
     id<MTLRenderCommandEncoder> mtlEncoder = _prepareEncoder(ctx);
     if (mtlEncoder == nil)
@@ -223,7 +223,7 @@ void MTLRenderer_DrawRect(MTLContext *mtlc, jint x, jint y, jint w, jint h) {
     if (dstOps != NULL) {
         MTLSDOps *dstCGLOps = (MTLSDOps *)dstOps->privOps;
         [JNFRunLoop performOnMainThreadWaiting:NO withBlock:^(){
-            MTLRenderer_DrawRectMetal(dstCGLOps->configInfo->context->ctxInfo, x, y, w, h);
+            MTLRenderer_DrawRectMetal(dstCGLOps->configInfo->context, x, y, w, h);
         }];
     }
 }
@@ -235,7 +235,7 @@ void _tracePoints(jint nPoints, jint *xPoints, jint *yPoints) {
 
 const int POLYLINE_BUF_SIZE = 64;
 
-void _fillVertex(MTLCtxInfo* ctx, struct Vertex * vertex, int x, int y) {
+void _fillVertex(MTLContext* ctx, struct Vertex * vertex, int x, int y) {
     vertex->position[0] = _screen2mtlX(ctx, x);
     vertex->position[1] = _screen2mtlY(ctx, y);
     vertex->position[2] = 0;
@@ -259,7 +259,7 @@ void MTLRenderer_DrawPoly(MTLContext *mtlc,
     if (dstOps == NULL || dstOps->privOps == NULL)
         return;
     MTLSDOps *dstCGLOps = (MTLSDOps *) dstOps->privOps;
-    MTLCtxInfo* ctx = dstCGLOps->configInfo->context->ctxInfo;
+    MTLContext* ctx = dstCGLOps->configInfo;
     if (ctx == NULL)
         return;
 
