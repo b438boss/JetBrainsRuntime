@@ -37,7 +37,7 @@ class MTLBufImgOps extends BufferedBufImgOps {
     /**
      * This method is called from MTLDrawImage.transformImage() only.  It
      * validates the provided BufferedImageOp to determine whether the op
-     * is one that can be accelerated by the OGL pipeline.  If the operation
+     * is one that can be accelerated by the MTL pipeline.  If the operation
      * cannot be completed for any reason, this method returns false;
      * otherwise, the given BufferedImage is rendered to the destination
      * using the provided BufferedImageOp and this method returns true.
@@ -87,9 +87,9 @@ class MTLBufImgOps extends BufferedBufImgOps {
 
         // Verify that the source surface is actually a texture and
         // that the operation is supported
-        MTLSurfaceDataBase oglSrc = (MTLSurfaceDataBase)srcData;
-        MTLGraphicsConfigBase gc = oglSrc.getMTLGraphicsConfig();
-        if (oglSrc.getType() != MTLSurfaceDataBase.TEXTURE ||
+        MTLSurfaceDataBase mtlSrc = (MTLSurfaceDataBase)srcData;
+        MTLGraphicsConfigBase gc = mtlSrc.getMTLGraphicsConfig();
+        if (mtlSrc.getType() != MTLSurfaceDataBase.TEXTURE ||
             !gc.isCapPresent(CAPS_EXT_BIOP_SHADER))
         {
             return false;

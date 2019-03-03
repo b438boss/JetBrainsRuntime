@@ -167,16 +167,6 @@ static struct TxtVertex verts[PGRAM_VERTEX_COUNT] = {
     }
     [window setContentView: scratchSurface];
 
-    jint caps = CAPS_EMPTY;
-    MTLContext_GetExtensionInfo(env, &caps);
-
-    caps |= CAPS_DOUBLEBUFFERED;
-
-    J2dRlsTraceLn1(J2D_TRACE_INFO,
-                   "MTLGraphicsConfig_getMTLConfigInfo: db=%d",
-                   (caps & CAPS_DOUBLEBUFFERED) != 0);
-
-
     MTLContext *mtlc = (MTLContext *)malloc(sizeof(MTLContext));
     if (mtlc == 0L) {
         J2dRlsTraceLn(J2D_TRACE_ERROR, "MTLGC_InitMTLContext: could not allocate memory for mtlc");
@@ -260,8 +250,6 @@ static struct TxtVertex verts[PGRAM_VERTEX_COUNT] = {
     mtlc->mtlCommandQueue = [mtlc->mtlDevice newCommandQueue];
     mtlc->mtlEmptyCommandBuffer = YES;
 
-    mtlc->caps = caps;
-
     // create the MTLGraphicsConfigInfo record for this config
     MTLGraphicsConfigInfo *mtlinfo = (MTLGraphicsConfigInfo *)malloc(sizeof(MTLGraphicsConfigInfo));
     if (mtlinfo == NULL) {
@@ -280,20 +268,6 @@ static struct TxtVertex verts[PGRAM_VERTEX_COUNT] = {
 }
 @end //GraphicsConfigUtil
 
-JNIEXPORT jint JNICALL
-Java_sun_java2d_metal_MTLGraphicsConfig_getMTLCapabilities
-    (JNIEnv *env, jclass mtlgc, jlong configInfo)
-{
-    J2dTraceLn(J2D_TRACE_INFO, "MTLGraphicsConfig_getMTLCapabilities");
-
-    MTLGraphicsConfigInfo *mtlinfo =
-        (MTLGraphicsConfigInfo *)jlong_to_ptr(configInfo);
-    if ((mtlinfo == NULL) || (mtlinfo->context == NULL)) {
-        return CAPS_EMPTY;
-    } else {
-        return mtlinfo->context->caps;
-    }
-}
 
 JNIEXPORT jint JNICALL
 Java_sun_java2d_metal_MTLGraphicsConfig_nativeGetMaxTextureSize

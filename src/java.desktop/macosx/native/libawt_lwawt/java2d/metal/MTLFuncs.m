@@ -26,11 +26,12 @@
 #include "MTLFuncs.h"
 
 
-MTL_DECLARE_LIB_HANDLE();
-
 jboolean
 MTLFuncs_OpenLibrary()
 {
+    //TODO
+    J2dTracePrimitive("MTLFuncs_OpenLibrary");
+
     J2dRlsTraceLn(J2D_TRACE_INFO, "MTLFuncs_OpenLibrary");
 
 
@@ -40,6 +41,8 @@ MTLFuncs_OpenLibrary()
 void
 MTLFuncs_CloseLibrary()
 {
+    //TODO
+    J2dTracePrimitive("MTLFuncs_CloseLibrary");
     J2dRlsTraceLn(J2D_TRACE_INFO, "MTLFuncs_CloseLibrary");
 
 }
@@ -47,6 +50,8 @@ MTLFuncs_CloseLibrary()
 jboolean
 MTLFuncs_InitPlatformFuncs()
 {
+    //TODO
+    J2dTracePrimitive("MTLFuncs_InitPlatformFuncs");
     J2dRlsTraceLn(J2D_TRACE_INFO, "MTLFuncs_InitPlatformFuncs");
 
     return JNI_TRUE;
@@ -55,6 +60,8 @@ MTLFuncs_InitPlatformFuncs()
 jboolean
 MTLFuncs_InitBaseFuncs()
 {
+    //TODO
+    J2dTracePrimitive("MTLFuncs_InitBaseFuncs");
     J2dRlsTraceLn(J2D_TRACE_INFO, "MTLFuncs_InitBaseFuncs");
 
 
@@ -64,6 +71,8 @@ MTLFuncs_InitBaseFuncs()
 jboolean
 MTLFuncs_InitExtFuncs()
 {
+    //TODO
+    J2dTracePrimitive("MTLFuncs_InitExtFuncs");
     J2dRlsTraceLn(J2D_TRACE_INFO, "MTLFuncs_InitExtFuncs");
 
     return JNI_TRUE;

@@ -533,10 +533,10 @@ final class MTLSurfaceToSwBlit extends Blit {
             cachedSrc = srcTmp.get();
         }
 
-        // We can convert argb_pre data from OpenGL surface in two places:
-        // - During OpenGL surface -> SW blit
+        // We can convert argb_pre data from MTL surface in two places:
+        // - During MTL surface -> SW blit
         // - During SW -> SW blit
-        // The first one is faster when we use opaque OGL surface, because in
+        // The first one is faster when we use opaque MTL surface, because in
         // this case we simply skip conversion and use color components as is.
         // Because of this we align intermediate buffer type with type of
         // destination not source.

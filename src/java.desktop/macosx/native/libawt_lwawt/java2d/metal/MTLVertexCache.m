@@ -67,42 +67,16 @@ static jint maskCacheIndex = 0;
 jboolean
 MTLVertexCache_InitVertexCache(MTLContext *mtlc)
 {
+    //TODO
     J2dTraceLn(J2D_TRACE_INFO, "MTLVertexCache_InitVertexCache");
-
-  /*  if (vertexCache == NULL) {
-        vertexCache = (J2DVertex *)malloc(MTLVC_MAX_INDEX * sizeof(J2DVertex));
-        if (vertexCache == NULL) {
-            return JNI_FALSE;
-        }
-    }
-
-    if (!mtlc->vertexCacheEnabled) {
-        j2d_glTexCoordPointer(2, GL_FLOAT,
-                              sizeof(J2DVertex), vertexCache);
-        j2d_glColorPointer(4, GL_UNSIGNED_BYTE,
-                           sizeof(J2DVertex), ((jfloat *)vertexCache) + 2);
-        j2d_glVertexPointer(2, GL_FLOAT,
-                            sizeof(J2DVertex), ((jfloat *)vertexCache) + 3);
-
-        j2d_glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        j2d_glEnableClientState(GL_COLOR_ARRAY);
-        j2d_glEnableClientState(GL_VERTEX_ARRAY);
-
-        mtlc->vertexCacheEnabled = JNI_TRUE;
-    }
-*/
     return JNI_TRUE;
 }
 
 void
 MTLVertexCache_FlushVertexCache()
 {
+    // TODO
     J2dTraceLn(J2D_TRACE_INFO, "MTLVertexCache_FlushVertexCache");
-/*
-    if (vertexCacheIndex > 0) {
-        j2d_glDrawArrays(GL_QUADS, 0, vertexCacheIndex);
-    }
-    */
     vertexCacheIndex = 0;
 }
 

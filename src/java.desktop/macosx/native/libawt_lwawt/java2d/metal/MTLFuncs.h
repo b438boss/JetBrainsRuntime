@@ -28,8 +28,6 @@
 #include <dlfcn.h>
 #endif
 #include "jni.h"
-#include "MTLFuncMacros.h"
-#include "MTLFuncs_md.h"
 #include "Trace.h"
 
 jboolean MTLFuncs_OpenLibrary();

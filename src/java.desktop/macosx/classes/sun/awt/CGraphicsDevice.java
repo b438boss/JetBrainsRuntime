@@ -71,7 +71,6 @@ public final class CGraphicsDevice extends GraphicsDevice
                         MTLGraphicsConfig.getConfig(this, displayID, 0) :
                         CGLGraphicsConfig.getConfig(this, displayID, 0)
         };
-        System.err.println(nativeGetMetalDeviceName(displayID));
     }
 
     /**

@@ -151,7 +151,6 @@ public class MTLContext extends BufferedContext {
 
     public static class MTLContextCaps extends ContextCapabilities {
         /**
-         * Indicates the presence of the GL_EXT_framebuffer_object extension.
          * This cap will only be set if the fbobject system property has been
          * enabled and we are able to create an FBO with depth buffer.
          */
@@ -162,21 +161,18 @@ public class MTLContext extends BufferedContext {
         @Native
         public static final int CAPS_DOUBLEBUFFERED   = (FIRST_PRIVATE_CAP << 0);
         /**
-         * Indicates the presence of the GL_ARB_fragment_shader extension.
          * This cap will only be set if the lcdshader system property has been
          * enabled and the hardware supports the minimum number of texture units
          */
         @Native
         static final int CAPS_EXT_LCD_SHADER   = (FIRST_PRIVATE_CAP << 1);
         /**
-         * Indicates the presence of the GL_ARB_fragment_shader extension.
          * This cap will only be set if the biopshader system property has been
          * enabled and the hardware meets our minimum requirements.
          */
         @Native
         static final int CAPS_EXT_BIOP_SHADER  = (FIRST_PRIVATE_CAP << 2);
         /**
-         * Indicates the presence of the GL_ARB_fragment_shader extension.
          * This cap will only be set if the gradshader system property has been
          * enabled and the hardware meets our minimum requirements.
          */
