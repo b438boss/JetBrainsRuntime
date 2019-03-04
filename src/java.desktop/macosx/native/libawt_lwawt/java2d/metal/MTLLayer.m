@@ -61,18 +61,17 @@
     self.actions = actions;
     [actions release];
 
-    self.ctx = NULL;
 
     return self;
 }
 
 - (void) blitTexture {
-    if (self.ctx == NULL) {
+    if (self.ctx == NULL || self.javaLayer == NULL) {
         return;
     }
 
     @autoreleasepool {
-        if (ctx->mtlCommandBuffer) {
+        if (ctx->mtlCommandBuffer && ctx->mtlDevice) {
             self.device = ctx->mtlDevice;
             self.pixelFormat = MTLPixelFormatBGRA8Unorm;
             self.framebufferOnly = NO;
@@ -116,14 +115,14 @@
             [mtlEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:PGRAM_VERTEX_COUNT];
             [mtlEncoder endEncoding];
 
-            [ctx->mtlRenderPassDesc release];
-            ctx->mtlRenderPassDesc = nil;
 
             if (!ctx->mtlEmptyCommandBuffer) {
                 [ctx->mtlCommandBuffer presentDrawable:mtlDrawable];
                 [ctx->mtlCommandBuffer commit];
             }
 
+            [ctx->mtlRenderPassDesc release];
+            ctx->mtlRenderPassDesc = nil;
 
             [ctx->mtlCommandBuffer release];
             ctx->mtlCommandBuffer = nil;

@@ -183,7 +183,6 @@ static struct TxtVertex verts[PGRAM_VERTEX_COUNT] = {
                                                            options:MTLResourceCPUCacheModeDefaultCache] retain];
 
     NSError *error = nil;
-    NSLog(@"Load shader library from %@", mtlShadersLib);
 
     mtlc->mtlLibrary = [mtlc->mtlDevice newLibraryWithFile: mtlShadersLib error:&error];
     if (!mtlc->mtlLibrary) {
@@ -262,7 +261,6 @@ static struct TxtVertex verts[PGRAM_VERTEX_COUNT] = {
     mtlinfo->screen = displayID;
     mtlinfo->context = mtlc;
 
-  //  [NSOpenGLContext clearCurrentContext];
     [argValue addObject: [NSNumber numberWithLong:ptr_to_jlong(mtlinfo)]];
     [pool drain];
 }

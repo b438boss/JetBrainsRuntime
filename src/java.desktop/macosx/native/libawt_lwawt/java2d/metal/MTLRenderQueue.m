@@ -464,8 +464,10 @@ Java_sun_java2d_metal_MTLRenderQueue_flushBuffer
                 if (mtlc != NULL) {
                     RESET_PREVIOUS_OP();
                 }
-                mtlc = MTLSD_SetScratchSurface(env, pConfigInfo);
-                dstOps = NULL;
+                [JNFRunLoop performOnMainThreadWaiting:NO withBlock:^(){
+                    mtlc = MTLSD_SetScratchSurface(env, pConfigInfo);
+                    dstOps = NULL;
+                }];
             }
             break;
         case sun_java2d_pipe_BufferedOpCodes_FLUSH_SURFACE:
@@ -501,7 +503,10 @@ Java_sun_java2d_metal_MTLRenderQueue_flushBuffer
                 jlong pConfigInfo = NEXT_LONG(b);
                 CONTINUE_IF_NULL(mtlc);
                 RESET_PREVIOUS_OP();
-                MTLGC_DestroyMTLGraphicsConfig(pConfigInfo);
+                [JNFRunLoop performOnMainThreadWaiting:NO withBlock:^(){
+                    MTLGC_DestroyMTLGraphicsConfig(pConfigInfo);
+                }];
+
 
                 // the previous method will call glX/wglMakeCurrent(None),
                 // so we should nullify the current mtlc and dstOps to avoid

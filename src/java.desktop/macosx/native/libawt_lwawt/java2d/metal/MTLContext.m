@@ -344,6 +344,8 @@ MTLContext_DestroyContextResources(MTLContext *mtlc)
 
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
     [mtlc->mtlDevice release];
+    mtlc->mtlDevice = nil;
+
     [pool drain];
     //if (mtlc->blitTextureID != 0) {
     //}
