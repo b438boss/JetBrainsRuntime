@@ -564,21 +564,25 @@ HRESULT CDialogEventHandler_CreateInstance(FileDialogData *data, REFIID riid, vo
     OLE_RETURN_HR
 }
 
-HRESULT CreateShellItem(LPTSTR path, IShellItem *shellItem) {
+IShellItemPtr CreateShellItem(LPTSTR path) {
     size_t pathLength = _tcslen(path);
     for (size_t index = 0; index < pathLength; index++) {
         if (path[index] == _T('/'))
             path[index] = _T('\\');
     }
 
-    return ::SHCreateItemInKnownFolder(FOLDERID_ComputerFolder, 0, path, IID_PPV_ARGS(&shellItem));
+    IShellItemPtr shellItem;
+    if (SUCCEEDED(::SHCreateItemInKnownFolder(FOLDERID_ComputerFolder, 0, path, IID_PPV_ARGS(&shellItem)))) {
+        return shellItem;
+    }
+    return NULL;
 }
 
 CoTaskStringHolder GetShortName(LPTSTR path) {
     CoTaskStringHolder shortName;
     OLE_TRY
-    IShellItemPtr shellItem;
-    OLE_HRT(CreateShellItem(path, shellItem));
+    IShellItemPtr shellItem = CreateShellItem(path);
+    OLE_CHECK_NOTNULL(shellItem);
     OLE_HRT(shellItem->GetDisplayName(SIGDN_PARENTRELATIVE, &shortName));
     OLE_CATCH
     return SUCCEEDED(OLE_HR) ? shortName : CoTaskStringHolder();
@@ -725,8 +729,8 @@ AwtFileDialog::Show(void *p)
             OLE_HRT(pfd->SetFileTypes(s_fileFilterCount, s_fileFilterSpec));
             OLE_HRT(pfd->SetFileTypeIndex(1));
 
-            IShellItemPtr directoryItem;
-            if (SUCCEEDED(CreateShellItem(directoryBuffer, directoryItem))) {
+            IShellItemPtr directoryItem = CreateShellItem(directoryBuffer);
+            if (directoryItem != NULL) {
                 pfd->SetFolder(directoryItem);
             }
             CoTaskStringHolder shortName = GetShortName(fileBuffer);
