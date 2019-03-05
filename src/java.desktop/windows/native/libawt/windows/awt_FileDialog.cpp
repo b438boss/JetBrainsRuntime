@@ -608,7 +608,7 @@ AwtFileDialog::Show(void *p)
     IFileDialogEventsPtr pfde;
     IShellItemPtr psiResult;
     FileDialogData data;
-    DWORD dwCookie;
+    DWORD dwCookie = OLE_BAD_COOKIE;
 
     OPENFILENAME ofn;
     memset(&ofn, 0, sizeof(ofn));
@@ -829,7 +829,7 @@ AwtFileDialog::Show(void *p)
     } catch (...) {
 
         if (useCommonItemDialog) {
-            if (pfd) {
+            if (pfd && dwCookie != OLE_BAD_COOKIE) {
                 pfd->Unadvise(dwCookie);
             }
         }
@@ -849,7 +849,7 @@ AwtFileDialog::Show(void *p)
     }
 
     if (useCommonItemDialog) {
-        if (pfd) {
+        if (pfd && dwCookie != OLE_BAD_COOKIE) {
             pfd->Unadvise(dwCookie);
         }
     }
